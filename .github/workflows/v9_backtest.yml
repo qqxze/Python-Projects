@@ -27,27 +27,28 @@ jobs:
           for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
             curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
           done
-          curl -fL --retry 3 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2' -o v9_backtest/data/hy_oas.csv
-          wc -l v9_backtest/data/*.tsv v9_backtest/data/hy_oas.csv
+          curl -fL --retry 3 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2&cosd=1996-12-31&coed=2025-12-31' -o v9_backtest/data/hy_oas_full.csv
+          echo "HY OAS rows: $(wc -l < v9_backtest/data/hy_oas_full.csv)"
+          test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 5000
       - name: Run frozen V9 baseline
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run V10 research factorial experiments
+      - name: Run V10 round-2 experiments
         working-directory: v9_backtest
-        run: python run_v10_research_experiments.py
-      - name: Show research results
+        run: python run_v10_round2.py
+      - name: Show round-2 results
         working-directory: v9_backtest
         run: |
-          cat v10_research_results/summary.csv
-          cat v10_research_results/diagnostics.json
-          cat v10_research_results/rolling.json
-          cat v10_research_results/eras.csv
-      - name: Upload V10 research artifact
+          cat v10_round2_results/summary.csv
+          cat v10_round2_results/diagnostics.json
+          cat v10_round2_results/rolling.json
+          cat v10_round2_results/eras.csv
+      - name: Upload V10 round-2 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v10-factor-research-results
+          name: v10-round2-results
           path: |
             v9_backtest/results/
-            v9_backtest/v10_research_results/
+            v9_backtest/v10_round2_results/
           if-no-files-found: error
           retention-days: 7
