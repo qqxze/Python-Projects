@@ -33,7 +33,7 @@ jobs:
         run: python run_formal_backtest.py
       - name: Run frozen production robustness suite
         working-directory: v9_backtest
-        run: python run_robustness_validation.py
+        run: python run_robustness_validation_fixed.py
       - name: Show robustness results
         working-directory: v9_backtest
         run: |
