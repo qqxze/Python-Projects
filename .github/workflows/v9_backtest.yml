@@ -40,6 +40,9 @@ jobs:
       - name: Run fixed-flow QQQ frontier
         working-directory: v9_backtest
         run: python run_flow_frontier.py
+      - name: Run original V9 dynamic-flow reconstruction
+        working-directory: v9_backtest
+        run: python run_v9_original_dynamic_flow.py
       - name: Show results
         working-directory: v9_backtest
         run: |
@@ -47,18 +50,19 @@ jobs:
           cat results/summary.csv
           echo '=== true split sleeve ==='
           cat split_results/summary.csv
-          echo '=== fixed-flow QQQ frontier ==='
-          cat frontier_results/diagnostics.json
-          cat frontier_results/summary.csv
-          cat frontier_results/crisis_stats.json
+          echo '=== original V9 dynamic flow ==='
+          cat v9_original_dynamic_results/spec.json
+          cat v9_original_dynamic_results/summary.csv
+          cat v9_original_dynamic_results/crisis_stats.json
       - name: Upload backtest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-flow-frontier-results
+          name: v9-original-dynamic-flow-results
           path: |
             v9_backtest/results/
             v9_backtest/execution_results/
             v9_backtest/split_results/
             v9_backtest/frontier_results/
+            v9_backtest/v9_original_dynamic_results/
           if-no-files-found: error
           retention-days: 7
