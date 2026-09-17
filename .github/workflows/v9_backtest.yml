@@ -1,0 +1,47 @@
+name: V9 strict backtest
+
+on:
+  pull_request:
+    paths:
+      - 'v9_backtest/**'
+      - '.github/workflows/v9_backtest.yml'
+  workflow_dispatch:
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install --disable-pip-version-check numpy pandas
+      - name: Download frozen public data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p v9_backtest/data
+          base='https://raw.githubusercontent.com/bumbeishvili/tqqq.networthcast.com/main/data'
+          for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
+            curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
+          done
+          wc -l v9_backtest/data/*.tsv
+      - name: Run frozen V9 2000-2025
+        working-directory: v9_backtest
+        run: python run_formal_backtest.py
+      - name: Show results
+        working-directory: v9_backtest
+        run: |
+          cat results/diagnostics.json
+          cat results/summary.csv
+          cat results/crisis_stats.json
+          cat results/rolling.json
+      - name: Upload strict backtest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v9-strict-backtest-results
+          path: v9_backtest/results/
+          if-no-files-found: error
+          retention-days: 7
