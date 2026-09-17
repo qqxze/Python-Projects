@@ -27,9 +27,11 @@ jobs:
           for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
             curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
           done
-          curl -fL --retry 3 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2&cosd=1996-12-31&coed=2025-12-31' -o v9_backtest/data/hy_oas_full.csv
+          # FRED now exposes only ~3 years of this ICE series. Use a pinned pre-cutoff archive
+          # that contains 1996-12-31 through 2025-12-30; do not redistribute it in artifacts.
+          curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
           echo "HY OAS rows: $(wc -l < v9_backtest/data/hy_oas_full.csv)"
-          test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 5000
+          test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
       - name: Run frozen V9 baseline
         working-directory: v9_backtest
         run: python run_formal_backtest.py
