@@ -27,30 +27,20 @@ jobs:
           for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
             curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
           done
-          # FRED now exposes only ~3 years of this ICE series. Use a pinned pre-cutoff archive
-          # that contains 1996-12-31 through 2025-12-30; do not redistribute it in artifacts.
           curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
-          echo "HY OAS rows: $(wc -l < v9_backtest/data/hy_oas_full.csv)"
           test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
-      - name: Run frozen V9 baseline
+      - name: Run credit gate sensitivity
         working-directory: v9_backtest
-        run: python run_formal_backtest.py
-      - name: Run V10 round-2 experiments
-        working-directory: v9_backtest
-        run: python run_v10_round2.py
-      - name: Show round-2 results
+        run: python run_credit_gate_sensitivity.py
+      - name: Show sensitivity results
         working-directory: v9_backtest
         run: |
-          cat v10_round2_results/summary.csv
-          cat v10_round2_results/diagnostics.json
-          cat v10_round2_results/rolling.json
-          cat v10_round2_results/eras.csv
-      - name: Upload V10 round-2 artifact
+          cat credit_gate_sensitivity/sensitivity.csv
+          cat credit_gate_sensitivity/diagnostics.json
+      - name: Upload sensitivity artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v10-round2-results
-          path: |
-            v9_backtest/results/
-            v9_backtest/v10_round2_results/
+          name: v10-credit-gate-sensitivity
+          path: v9_backtest/credit_gate_sensitivity/
           if-no-files-found: error
           retention-days: 7
