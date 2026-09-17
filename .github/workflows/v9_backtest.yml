@@ -31,17 +31,25 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
+      - name: Run production execution variants
+        working-directory: v9_backtest
+        run: python run_execution_backtest.py
       - name: Show results
         working-directory: v9_backtest
         run: |
-          cat results/diagnostics.json
+          echo '=== strict target-weight ==='
           cat results/summary.csv
-          cat results/crisis_stats.json
-          cat results/rolling.json
+          echo '=== production execution ==='
+          cat execution_results/diagnostics.json
+          cat execution_results/summary.csv
+          cat execution_results/crisis_stats.json
+          cat execution_results/rolling.json
       - name: Upload strict backtest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-strict-backtest-results
-          path: v9_backtest/results/
+          name: v9-production-backtest-results
+          path: |
+            v9_backtest/results/
+            v9_backtest/execution_results/
           if-no-files-found: error
           retention-days: 7
