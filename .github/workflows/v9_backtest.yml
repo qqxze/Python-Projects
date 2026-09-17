@@ -27,28 +27,27 @@ jobs:
           for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
             curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
           done
-          wc -l v9_backtest/data/*.tsv
-      - name: Run frozen V9 2000-2025
+          curl -fL --retry 3 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2' -o v9_backtest/data/hy_oas.csv
+          wc -l v9_backtest/data/*.tsv v9_backtest/data/hy_oas.csv
+      - name: Run frozen V9 baseline
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run frozen production robustness suite
+      - name: Run V10 research factorial experiments
         working-directory: v9_backtest
-        run: python run_robustness_validation_fixed.py
-      - name: Show robustness results
+        run: python run_v10_research_experiments.py
+      - name: Show research results
         working-directory: v9_backtest
         run: |
-          cat robustness_results/summary.json
-          cat robustness_results/starting_years.csv
-          cat robustness_results/cost_sensitivity.csv
-          cat robustness_results/delay_sensitivity.csv
-          cat robustness_results/eras.csv
-          cat robustness_results/pseudo_walkforward.csv
-      - name: Upload robustness artifact
+          cat v10_research_results/summary.csv
+          cat v10_research_results/diagnostics.json
+          cat v10_research_results/rolling.json
+          cat v10_research_results/eras.csv
+      - name: Upload V10 research artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-production-robustness-results
+          name: v10-factor-research-results
           path: |
             v9_backtest/results/
-            v9_backtest/robustness_results/
+            v9_backtest/v10_research_results/
           if-no-files-found: error
           retention-days: 7
