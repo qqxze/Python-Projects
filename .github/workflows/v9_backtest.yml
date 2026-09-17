@@ -31,22 +31,21 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run monthly emergency-deleveraging validation
+      - name: Run emergency trigger ablation
         working-directory: v9_backtest
-        run: python run_monthly_emergency_backtest.py
-      - name: Show emergency results
+        run: python run_emergency_ablation.py
+      - name: Show emergency ablation results
         working-directory: v9_backtest
         run: |
-          cat emergency_results/spec.json
-          cat emergency_results/summary.csv
-          cat emergency_results/crisis_stats.json
-          cat emergency_results/rolling.json
-      - name: Upload emergency artifact
+          cat emergency_ablation_results/spec.json
+          cat emergency_ablation_results/summary.csv
+          cat emergency_ablation_results/crisis_stats.json
+      - name: Upload emergency ablation artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-monthly-emergency-results
+          name: v9-emergency-ablation-results
           path: |
             v9_backtest/results/
-            v9_backtest/emergency_results/
+            v9_backtest/emergency_ablation_results/
           if-no-files-found: error
           retention-days: 7
