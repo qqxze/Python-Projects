@@ -31,21 +31,22 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run implementation attribution ladder
+      - name: Run decision-frequency comparison
         working-directory: v9_backtest
-        run: python run_attribution_backtest.py
-      - name: Show attribution results
+        run: python run_frequency_backtest.py
+      - name: Show frequency results
         working-directory: v9_backtest
         run: |
-          cat attribution_results/method.json
-          cat attribution_results/summary.csv
-          cat attribution_results/diagnostics.json
-      - name: Upload attribution artifact
+          cat frequency_results/spec.json
+          cat frequency_results/summary.csv
+          cat frequency_results/crisis_stats.json
+          cat frequency_results/rolling.json
+      - name: Upload frequency artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-attribution-results
+          name: v9-frequency-results
           path: |
             v9_backtest/results/
-            v9_backtest/attribution_results/
+            v9_backtest/frequency_results/
           if-no-files-found: error
           retention-days: 7
