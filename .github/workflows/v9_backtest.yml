@@ -31,21 +31,24 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run emergency trigger ablation
+      - name: Run frozen production robustness suite
         working-directory: v9_backtest
-        run: python run_emergency_ablation.py
-      - name: Show emergency ablation results
+        run: python run_robustness_validation.py
+      - name: Show robustness results
         working-directory: v9_backtest
         run: |
-          cat emergency_ablation_results/spec.json
-          cat emergency_ablation_results/summary.csv
-          cat emergency_ablation_results/crisis_stats.json
-      - name: Upload emergency ablation artifact
+          cat robustness_results/summary.json
+          cat robustness_results/starting_years.csv
+          cat robustness_results/cost_sensitivity.csv
+          cat robustness_results/delay_sensitivity.csv
+          cat robustness_results/eras.csv
+          cat robustness_results/pseudo_walkforward.csv
+      - name: Upload robustness artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-emergency-ablation-results
+          name: v9-production-robustness-results
           path: |
             v9_backtest/results/
-            v9_backtest/emergency_ablation_results/
+            v9_backtest/robustness_results/
           if-no-files-found: error
           retention-days: 7
