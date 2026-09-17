@@ -31,38 +31,21 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run production execution variants
+      - name: Run implementation attribution ladder
         working-directory: v9_backtest
-        run: python run_execution_backtest.py
-      - name: Run true split-sleeve production model
-        working-directory: v9_backtest
-        run: python run_split_sleeve_backtest.py
-      - name: Run fixed-flow QQQ frontier
-        working-directory: v9_backtest
-        run: python run_flow_frontier.py
-      - name: Run original V9 dynamic-flow reconstruction
-        working-directory: v9_backtest
-        run: python run_v9_original_dynamic_flow.py
-      - name: Show results
+        run: python run_attribution_backtest.py
+      - name: Show attribution results
         working-directory: v9_backtest
         run: |
-          echo '=== strict target-weight ==='
-          cat results/summary.csv
-          echo '=== true split sleeve ==='
-          cat split_results/summary.csv
-          echo '=== original V9 dynamic flow ==='
-          cat v9_original_dynamic_results/spec.json
-          cat v9_original_dynamic_results/summary.csv
-          cat v9_original_dynamic_results/crisis_stats.json
-      - name: Upload backtest artifact
+          cat attribution_results/method.json
+          cat attribution_results/summary.csv
+          cat attribution_results/diagnostics.json
+      - name: Upload attribution artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-original-dynamic-flow-results
+          name: v9-attribution-results
           path: |
             v9_backtest/results/
-            v9_backtest/execution_results/
-            v9_backtest/split_results/
-            v9_backtest/frontier_results/
-            v9_backtest/v9_original_dynamic_results/
+            v9_backtest/attribution_results/
           if-no-files-found: error
           retention-days: 7
