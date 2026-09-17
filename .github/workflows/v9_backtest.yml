@@ -10,37 +10,49 @@ on:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
-        run: pip install --disable-pip-version-check numpy pandas
-      - name: Download frozen public data
+      - name: Install minimal FinRL-X runtime
+        run: |
+          pip install --disable-pip-version-check \
+            numpy pandas scipy matplotlib yfinance pandas-market-calendars requests 'bt>=1.2.0'
+      - name: Clone pinned official FinRL-X
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/AI4Finance-Foundation/FinRL-Trading.git /tmp/FinRL-Trading
+          cd /tmp/FinRL-Trading
+          git checkout e65d6f0483ead7d2ef4a5fc940cdf960392a25c1
+          test "$(git rev-parse HEAD)" = "e65d6f0483ead7d2ef4a5fc940cdf960392a25c1"
+      - name: Download pinned HY OAS history
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p v9_backtest/data
-          base='https://raw.githubusercontent.com/bumbeishvili/tqqq.networthcast.com/main/data'
-          for f in synthetic-qqq.tsv spy.tsv synthetic-qld.tsv synthetic-sso.tsv synthetic-tqqq.tsv short-rates.tsv; do
-            curl -fL --retry 3 "$base/$f" -o "v9_backtest/data/$f"
-          done
           curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
           test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
-      - name: Run credit gate sensitivity
+      - name: Run official FinRL-X real-data validation
         working-directory: v9_backtest
-        run: python run_credit_gate_sensitivity.py
-      - name: Show sensitivity results
+        env:
+          FINRL_X_ROOT: /tmp/FinRL-Trading
+        run: python run_finrl_real_validation.py
+      - name: Show real-data results
         working-directory: v9_backtest
         run: |
-          cat credit_gate_sensitivity/sensitivity.csv
-          cat credit_gate_sensitivity/diagnostics.json
-      - name: Upload sensitivity artifact
+          echo '=== Official FinRL-X unitized ==='
+          cat finrl_real_validation/finrl_unitized_summary.csv
+          echo '=== Real-data DCA ==='
+          cat finrl_real_validation/dca_summary.csv
+          echo '=== Data audit ==='
+          cat finrl_real_validation/data_audit.json
+      - name: Upload real-data artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v10-credit-gate-sensitivity
-          path: v9_backtest/credit_gate_sensitivity/
+          name: v9-finrl-real-data-validation
+          path: v9_backtest/finrl_real_validation/
           if-no-files-found: error
           retention-days: 7
