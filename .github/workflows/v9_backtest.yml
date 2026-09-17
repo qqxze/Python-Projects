@@ -34,22 +34,28 @@ jobs:
       - name: Run production execution variants
         working-directory: v9_backtest
         run: python run_execution_backtest.py
+      - name: Run true split-sleeve production model
+        working-directory: v9_backtest
+        run: python run_split_sleeve_backtest.py
       - name: Show results
         working-directory: v9_backtest
         run: |
           echo '=== strict target-weight ==='
           cat results/summary.csv
           echo '=== production execution ==='
-          cat execution_results/diagnostics.json
           cat execution_results/summary.csv
-          cat execution_results/crisis_stats.json
-          cat execution_results/rolling.json
-      - name: Upload strict backtest artifact
+          echo '=== true split sleeve ==='
+          cat split_results/diagnostics.json
+          cat split_results/summary.csv
+          cat split_results/crisis_stats.json
+          cat split_results/rolling.json
+      - name: Upload backtest artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-production-backtest-results
+          name: v9-split-sleeve-backtest-results
           path: |
             v9_backtest/results/
             v9_backtest/execution_results/
+            v9_backtest/split_results/
           if-no-files-found: error
           retention-days: 7
