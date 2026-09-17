@@ -31,22 +31,22 @@ jobs:
       - name: Run frozen V9 2000-2025
         working-directory: v9_backtest
         run: python run_formal_backtest.py
-      - name: Run decision-frequency comparison
+      - name: Run monthly emergency-deleveraging validation
         working-directory: v9_backtest
-        run: python run_frequency_backtest.py
-      - name: Show frequency results
+        run: python run_monthly_emergency_backtest.py
+      - name: Show emergency results
         working-directory: v9_backtest
         run: |
-          cat frequency_results/spec.json
-          cat frequency_results/summary.csv
-          cat frequency_results/crisis_stats.json
-          cat frequency_results/rolling.json
-      - name: Upload frequency artifact
+          cat emergency_results/spec.json
+          cat emergency_results/summary.csv
+          cat emergency_results/crisis_stats.json
+          cat emergency_results/rolling.json
+      - name: Upload emergency artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-frequency-results
+          name: v9-monthly-emergency-results
           path: |
             v9_backtest/results/
-            v9_backtest/frequency_results/
+            v9_backtest/emergency_results/
           if-no-files-found: error
           retention-days: 7
