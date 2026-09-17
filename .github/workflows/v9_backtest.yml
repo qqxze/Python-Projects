@@ -39,7 +39,7 @@ jobs:
         working-directory: v9_backtest
         env:
           FINRL_X_ROOT: /tmp/FinRL-Trading
-        run: python run_finrl_real_validation.py
+        run: python run_finrl_real_validation_entry.py
       - name: Show real-data results
         working-directory: v9_backtest
         run: |
