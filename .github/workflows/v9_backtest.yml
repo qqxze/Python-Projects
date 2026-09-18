@@ -1,0 +1,47 @@
+name: V9 strict backtest
+
+on:
+  pull_request:
+    paths:
+      - 'v9_backtest/**'
+      - '.github/workflows/v9_backtest.yml'
+  workflow_dispatch:
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research runtime
+        run: |
+          pip install --disable-pip-version-check             numpy pandas scipy matplotlib yfinance pandas-market-calendars requests 'bt>=1.2.0'
+      - name: Download pinned HY OAS history
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p v9_backtest/data
+          curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
+          test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
+      - name: Run flow-only growth attribution
+        working-directory: v9_backtest
+        run: python run_flow_only_growth_ablation.py
+      - name: Show attribution results
+        working-directory: v9_backtest
+        run: |
+          echo '=== 2010-2025 ==='
+          cat flow_only_growth_ablation/summary_2010_2025.csv
+          echo '=== 2007-2025 ==='
+          cat flow_only_growth_ablation/summary_2007_2025.csv
+          echo '=== Cross-period comparison ==='
+          cat flow_only_growth_ablation/comparison.csv
+      - name: Upload attribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: v9-flow-only-growth-ablation
+          path: v9_backtest/flow_only_growth_ablation/
+          if-no-files-found: error
+          retention-days: 7
