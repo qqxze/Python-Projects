@@ -10,23 +10,15 @@ on:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install minimal FinRL-X runtime
+      - name: Install research runtime
         run: |
           pip install --disable-pip-version-check             numpy pandas scipy matplotlib yfinance pandas-market-calendars requests 'bt>=1.2.0'
-      - name: Clone pinned official FinRL-X
-        shell: bash
-        run: |
-          set -euo pipefail
-          git clone --filter=blob:none --no-checkout https://github.com/AI4Finance-Foundation/FinRL-Trading.git /tmp/FinRL-Trading
-          cd /tmp/FinRL-Trading
-          git checkout e65d6f0483ead7d2ef4a5fc940cdf960392a25c1
-          test "$(git rev-parse HEAD)" = "e65d6f0483ead7d2ef4a5fc940cdf960392a25c1"
       - name: Download pinned HY OAS history
         shell: bash
         run: |
@@ -34,26 +26,22 @@ jobs:
           mkdir -p v9_backtest/data
           curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
           test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
-      - name: Run GFC-inclusive real-data validation
+      - name: Run flow-only growth attribution
         working-directory: v9_backtest
-        env:
-          FINRL_X_ROOT: /tmp/FinRL-Trading
-        run: python run_gfc_real_validation_entry.py
-      - name: Show GFC validation results
+        run: python run_flow_only_growth_ablation.py
+      - name: Show attribution results
         working-directory: v9_backtest
         run: |
-          echo '=== Official FinRL-X ==='
-          cat gfc_real_validation/finrl_unitized_summary.csv
-          echo '=== Dynamic DCA ==='
-          cat gfc_real_validation/dca_summary.csv
-          echo '=== GFC window ==='
-          cat gfc_real_validation/gfc_window.csv
-          echo '=== Audit ==='
-          cat gfc_real_validation/audit.json
-      - name: Upload research artifact
+          echo '=== 2010-2025 ==='
+          cat flow_only_growth_ablation/summary_2010_2025.csv
+          echo '=== 2007-2025 ==='
+          cat flow_only_growth_ablation/summary_2007_2025.csv
+          echo '=== Cross-period comparison ==='
+          cat flow_only_growth_ablation/comparison.csv
+      - name: Upload attribution artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-gfc-real-data-validation
-          path: v9_backtest/gfc_real_validation/
+          name: v9-flow-only-growth-ablation
+          path: v9_backtest/flow_only_growth_ablation/
           if-no-files-found: error
           retention-days: 7
