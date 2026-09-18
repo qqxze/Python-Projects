@@ -10,7 +10,7 @@ on:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,8 +18,7 @@ jobs:
           python-version: '3.11'
       - name: Install minimal FinRL-X runtime
         run: |
-          pip install --disable-pip-version-check \
-            numpy pandas scipy matplotlib yfinance pandas-market-calendars requests 'bt>=1.2.0'
+          pip install --disable-pip-version-check             numpy pandas scipy matplotlib yfinance pandas-market-calendars requests 'bt>=1.2.0'
       - name: Clone pinned official FinRL-X
         shell: bash
         run: |
@@ -35,24 +34,26 @@ jobs:
           mkdir -p v9_backtest/data
           curl -fL --retry 3 'https://raw.githubusercontent.com/maaurocp/Trading_Protocol/bf64e83fa4c2a6e72c37d3883476dc81bd9d2e31/data/raw/fred_BAMLH0A0HYM2.csv' -o v9_backtest/data/hy_oas_full.csv
           test "$(wc -l < v9_backtest/data/hy_oas_full.csv)" -gt 7000
-      - name: Run official FinRL-X real-data validation
+      - name: Run upside capture research on real ETF data
         working-directory: v9_backtest
         env:
           FINRL_X_ROOT: /tmp/FinRL-Trading
-        run: python run_finrl_real_validation_entry.py
-      - name: Show real-data results
+        run: python run_upside_capture_research_entry.py
+      - name: Show research results
         working-directory: v9_backtest
         run: |
-          echo '=== Official FinRL-X unitized ==='
-          cat finrl_real_validation/finrl_unitized_summary.csv
-          echo '=== Real-data DCA ==='
-          cat finrl_real_validation/dca_summary.csv
-          echo '=== Data audit ==='
-          cat finrl_real_validation/data_audit.json
-      - name: Upload real-data artifact
+          echo '=== Official FinRL-X old-money ==='
+          cat upside_capture_real/finrl_unitized_summary.csv
+          echo '=== Dynamic DCA/full-account ==='
+          cat upside_capture_real/dca_summary.csv
+          echo '=== Audit ==='
+          cat upside_capture_real/audit.json
+          echo '=== Rolling ==='
+          cat upside_capture_real/rolling.json
+      - name: Upload research artifact
         uses: actions/upload-artifact@v4
         with:
-          name: v9-finrl-real-data-validation
-          path: v9_backtest/finrl_real_validation/
+          name: v9-upside-capture-real-data
+          path: v9_backtest/upside_capture_real/
           if-no-files-found: error
           retention-days: 7
